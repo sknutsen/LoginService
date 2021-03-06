@@ -1,7 +1,7 @@
-import { User } from "../../src/entities/User";
-import { users } from "../../src/routes/users";
+import { User } from "../entities/User";
+import { users } from "../handlers/users";
 
-export class auth {
+export class register {
     private u: users;
 
     constructor(u: users) {
@@ -9,7 +9,7 @@ export class auth {
     }
     
     /**
-     * register
+     * register - Registers a new user if there is no other user with the same username
      */
     public register(uname: string, pword: string): boolean {
         let result: boolean = false;
@@ -24,24 +24,7 @@ export class auth {
     }
 
     /**
-     * login
-     */
-    public login(uname: string, pword: string): boolean {
-        const ulist: User[] = this.u.getUsers();
-        let result: boolean = false;
-
-        for (let i: number = 0; i < ulist.length; i++) {
-            result = ulist[i].uname.toLowerCase() === uname.toLowerCase() && ulist[i].pword === pword;
-            if (result) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * verifyUser
+     * verifyUser - Verifies whether a user with the given username exists
      */
     public userExists(uname: string): boolean {
         const ulist: User[] = this.u.getUsers();

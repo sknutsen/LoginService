@@ -1,5 +1,5 @@
 import { User } from "../../src/entities/User";
-import { users } from "../../src/routes/users";
+import { users } from "../../src/handlers/users";
 
 let u: users;
 

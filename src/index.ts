@@ -10,18 +10,33 @@ const usersRoute: users = new users();
 const registerRoute: register = new register(usersRoute);
 const loginRoute: login = new login(usersRoute);
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.post('/login', (req, res) => {
-    const uname: string = "";
-    const pword: string = "";
+    const uname: string = req.body.uname;
+    const pword: string = req.body.pword;
     
-    loginRoute.login(uname, pword);
+    const result = loginRoute.login(uname, pword);
+
+    if (result === true) {
+        res.status(200).send('Login successful.');
+    } else {
+        res.status(400).send('Incorrect username or password.');
+    }
 });
 
 app.post('/register', (req, res) => {
-    const uname: string = "";
-    const pword: string = "";
+    const uname: string = req.body.uname;
+    const pword: string = req.body.pword;
     
-    registerRoute.register(uname, pword);
+    const result: boolean = registerRoute.register(uname, pword);
+
+    if (result === true) {
+        res.status(200).send('Registration successful.');
+    } else {
+        res.status(400).send('User with submitted username already exists.');
+    }
 });
 
 app.listen(port, () => {

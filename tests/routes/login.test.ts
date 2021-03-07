@@ -13,6 +13,8 @@ beforeEach(() => {
     u.postUser(user);
 });
 
+// Test for existing user with the associated password
+// Should be successful
 test("login true", () => {
     const uname: string = "sondre";
     const pword: string = "lol";
@@ -23,6 +25,8 @@ test("login true", () => {
     expect(ulist.find((e) => e.uname === uname && e.pword === pword)).toBeDefined();
 });
 
+// Test for existing user with an incorrect password
+// Should fail
 test("login false 1", () => {
     const uname: string = "sondre";
     const pword: string = "kek";
@@ -33,6 +37,8 @@ test("login false 1", () => {
     expect(ulist.find((e) => e.uname === uname && e.pword === pword)).toBeUndefined();
 });
 
+// Test for nonexistent user with pre-existing password
+// Should fail
 test("login false 2", () => {
     const uname: string = "bob";
     const pword: string = "lol";

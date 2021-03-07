@@ -10,6 +10,8 @@
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
     },
     "exclude": ["tests"],
 }

@@ -39,7 +39,7 @@ export class users {
     }
 
     /**
-     * postUser - Creates a new user
+     * postUser - Creates a new user with a unique id
      */
     public postUser(user: User): User {
         const sortedList = this.userList.sort((x, y) => x.id - y.id);
@@ -49,6 +49,8 @@ export class users {
         
         this.userList.push(user);
 
+        console.log(`Created user with id: ${user.id} - uname: ${user.uname} - pword: ${user.pword}`);
+
         return user;
     }
 
@@ -57,14 +59,19 @@ export class users {
      */
     public deleteUser(id: number): User | undefined {
         let result: User | undefined;
+        let newList: User[] = [];
 
         for( var i = 0; i < this.userList.length; i++){ 
             if (this.userList[i] !== undefined && this.userList[i].id === id) { 
-        
-                result = this.userList.splice(i, 1)[0];
-                break; 
+                //result = this.userList.splice(i, 1)[0];
+                result = this.userList[i];
+                continue; 
             }
+
+            newList.push(this.userList[i]);
         }
+
+        this.userList = newList;
 
         return result;
     }

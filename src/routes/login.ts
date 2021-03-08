@@ -11,8 +11,8 @@ export class login {
     /**
      * login - Verifies that the user exists and the password is correct
      */
-    public login(uname: string, pword: string): boolean {
-        const ulist: User[] = this.u.getUsers();
+    public async login(uname: string, pword: string): Promise<boolean> {
+        const ulist: User[] = await this.u.getUsers();
         let result: boolean = false;
 
         for (let i: number = 0; i < ulist.length; i++) {

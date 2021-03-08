@@ -1,21 +1,37 @@
+require('dotenv').config()
+import { Connection, createConnection } from "typeorm";
 import { User } from "../../src/entities/User";
 import { users } from "../../src/handlers/users";
+import { __dev__, __prod__, __test__ } from "../../src/constants";
+import { join } from "path";
 
 let u: users;
+let conn: Connection;
 
-beforeEach(() => {
-    u = new users();
+beforeAll(async () => {
+    conn = await createConnection({
+        type: 'postgres',
+        host: process.env.DB_HOST,
+        database: 'AuthDBTest',
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        entities: [join(__dirname, "../../src/entities/*.*")],
+        logging: false,
+        synchronize: true,
+    },);
+
+    u = new users(conn);
     
-    const user: User = new User(0, "username", "password");
-    const user2: User = new User(0, "username2", "password2");
-    u.postUser(user);
-    u.postUser(user2);
+    User.clear();
+    
+    const user: User = await User.create({uname: "username", pword: "password"}).save();
+    const user2: User = await User.create({uname: "username2", pword: "password2"}).save();
 });
 
 // Test for getting all existing users
 // Should return a list of 2 items
-test('getUsers positive test', () => {
-    const list: User[] = u.getUsers();
+test('getUsers positive test', async () => {
+    const list: User[] = await u.getUsers();
 
     expect(list).toBeDefined();
     expect(list.length).toBeGreaterThan(0);
@@ -24,9 +40,12 @@ test('getUsers positive test', () => {
 
 // Test for getting the user with id 1
 // Should return a user successfully
-test('getUser positive test', () => {
-    const id: number = 1;
-    const user: User | undefined = u.getUser(id);
+test('getUser positive test', async () => {
+    const puser: User = new User(0, "asdsadasd", "afafaewe");
+    const newUser: User = await u.postUser(puser.uname, puser.pword);
+
+    const id: number = newUser.id;
+    const user: User | undefined = await u.getUser(id);
 
     expect(user).toBeDefined();
     user !== undefined ? expect(user.id).toBe(id) : fail();
@@ -34,31 +53,32 @@ test('getUser positive test', () => {
 
 // Test for getting nonexistent user with id 100
 // Should fail
-test('getUser negative test', () => {
-    const id: number = 100;
-    const user: User | undefined = u.getUser(id);
+test('getUser negative test', async () => {
+    const id: number = 9999999;
+    const user: User | undefined = await u.getUser(id);
 
     expect(user).toBeUndefined();
 });
 
 // Test for updating the values of the user with id 1
 // Should return the user with the updated values successfully
-test('putUser positive test', () => {
+test('putUser positive test', async () => {
+    const puser: User = new User(0, "asdsadaasd", "afafaewde");
+    const nUser: User = await u.postUser(puser.uname, puser.pword);
+
     const uname: string = "newusername";
     const pword: string = "newpassword";
-    const id: number = 1;
+    const id: number = nUser.id;
 
     const user: User = new User(id, uname, pword);
-    const newUser: User | undefined = u.putUser(user.id, user);
-    const ulist: User[] = u.getUsers();
+    const newUser: User | undefined = await u.putUser(user.id, user);
 
     expect(newUser).toBeDefined();
     if (newUser !== undefined) {
-        expect(newUser.id).toBeGreaterThan(0);
         expect(newUser.id).toBe(id);
         expect(newUser.uname).toBe(user.uname);
         expect(newUser.pword).toBe(user.pword);
-        expect(ulist.includes(newUser)).toBe(true);
+        expect(await User.find({uname: newUser.uname, pword: newUser.pword})).toBeDefined();
     } else {
         fail();
     }
@@ -66,18 +86,16 @@ test('putUser positive test', () => {
 
 // Test for creating a new user
 // Should return the new user which should also be in the collection
-test('postUser positive test', () => {
+test('postUser positive test', async () => {
     const user: User = new User(0, "user3", "pword3");
-    const newUser: User = u.postUser(user);
-    const uget: User | undefined = u.getUser(newUser.id);
-    const ulist: User[] = u.getUsers();
+    const newUser: User = await u.postUser(user.uname, user.pword);
+    const uget: User | undefined = await u.getUser(newUser.id);
 
     expect(newUser).toBeDefined();
     if (newUser !== undefined) {
-        expect(newUser.id).toBeGreaterThan(0);
         expect(newUser.uname).toBe(user.uname);
         expect(newUser.pword).toBe(user.pword);
-        expect(ulist.includes(newUser)).toBe(true);
+        expect(await User.find({uname: newUser.uname, pword: newUser.pword})).toBeDefined();
     } else {
         fail();
     }
@@ -87,7 +105,7 @@ test('postUser positive test', () => {
         expect(uget.id).toBe(newUser.id);
         expect(uget.uname).toBe(newUser.uname);
         expect(uget.pword).toBe(newUser.pword);
-        expect(ulist.includes(uget)).toBe(true);
+        expect(await User.find({uname: uget.uname, pword: uget.pword})).toBeDefined();
     } else {
         fail();
     }
@@ -95,10 +113,14 @@ test('postUser positive test', () => {
 
 // Test to delete an existing user
 // Should return the deleted user and also reduce the size of the collection by 1
-test('deleteUser positive test', () => {
-    const initlist: User[] = u.getUsers();
-    const deletedUser: User | undefined = u.deleteUser(1);
-    const ulist: User[] = u.getUsers();
+test('deleteUser positive test', async () => {
+    const puser: User = new User(0, "asdadasd", "afafaewae");
+    const newUser: User = await u.postUser(puser.uname, puser.pword);
+
+    const id: number = newUser.id;
+    const initlist: User[] = await u.getUsers();
+    const deletedUser: User | undefined = await u.deleteUser(id);
+    const ulist: User[] = await u.getUsers();
 
     expect(deletedUser).toBeDefined();
 
@@ -109,22 +131,15 @@ test('deleteUser positive test', () => {
 
 // Test to delete a nonexistent user
 // Should fail
-test('deleteUser negative test', () => {
-    const initlist: User[] = u.getUsers();
-    const deletedUser: User | undefined = u.deleteUser(100);
-    const ulist: User[] = u.getUsers();
+test('deleteUser negative test', async () => {
+    const initlist: User[] = await u.getUsers();
+    const deletedUser: User | undefined = await u.deleteUser(9999999);
+    const ulist: User[] = await u.getUsers();
 
     expect(deletedUser).toBeUndefined();
     expect(ulist.length).toBe(initlist.length);
 });
 
-// Test to empty the collection
-// Should return and empty array
-test('clearList', () => {
-    const ulist: User[] = u.getUsers();
-    u.clearList();
-    const clearList: User[] = u.getUsers();
-
-    expect(clearList.length).toBe(0);
-    expect(ulist.length).toBeGreaterThan(clearList.length);
+afterAll(async () => {
+    await conn.close();
 });

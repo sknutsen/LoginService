@@ -11,12 +11,11 @@ export class register {
     /**
      * register - Registers a new user if there is no other user with the same username
      */
-    public register(uname: string, pword: string): boolean {
+    public async register(uname: string, pword: string): Promise<boolean> {
         let result: boolean = false;
 
-        if (this.userExists(uname) === false) {
-            const user = new User(0, uname, pword);
-            this.u.postUser(user);
+        if (await this.userExists(uname) === false) {
+            await this.u.postUser(uname, pword);
             result = true;
         }
 
@@ -26,8 +25,8 @@ export class register {
     /**
      * verifyUser - Verifies whether a user with the given username exists
      */
-    public userExists(uname: string): boolean {
-        const ulist: User[] = this.u.getUsers();
+    public async userExists(uname: string): Promise<boolean> {
+        const ulist: User[] = await this.u.getUsers();
         let result: boolean = false;
 
         for (let i: number = 0; i < ulist.length; i++) {

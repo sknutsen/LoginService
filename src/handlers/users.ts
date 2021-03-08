@@ -1,21 +1,27 @@
+import { Connection } from "typeorm";
 import { User } from "../entities/User";
 
 export class users {
-    private userList: User[] = [];
+    private conn: Connection;
+
+    constructor(conn: Connection) {
+        this.conn = conn;
+    }
 
     /**
      * getUsers - Gets an array of all the users
      */
-    public getUsers(): User[] {
-        let result: User[] = this.userList;
+    public async getUsers(): Promise<User[]> {
+        const result: User[] = await User.find();
+        
         return result;
     }
 
     /**
      * getUser - Gets the user with the specified id
      */
-    public getUser(id: number): User | undefined {
-        let result: User | undefined = this.userList.find((e) => e.id === id);
+    public async getUser(id: number): Promise<User | undefined> {
+        let result: User | undefined = await User.findOne({id: id});
 
         return result;
     }
@@ -23,17 +29,10 @@ export class users {
     /**
      * putUser - Updates the data of the user with the specified id
      */
-    public putUser(id: number, user: User): User | undefined {
-        let result: User | undefined;
+    public async putUser(id: number, user: User): Promise<User | undefined> {
+        await User.update(id, {uname: user.uname, pword: user.pword});
 
-        for (let i = 0; i < this.userList.length; i++) {
-            if (this.userList[i].id === id) {
-                this.userList[i].pword = user.pword;
-                this.userList[i].uname = user.uname;
-
-                result = this.userList[i];
-            }
-        }
+        let result = this.getUser(id);
 
         return result;
     }
@@ -41,45 +40,24 @@ export class users {
     /**
      * postUser - Creates a new user with a unique id
      */
-    public postUser(user: User): User {
-        const sortedList = this.userList.sort((x, y) => x.id - y.id);
+    public async postUser(uname: string, pword: string): Promise<User> {
+        const result: User = await User.create({uname: uname, pword: pword}).save();
 
-        const elem = sortedList[sortedList.length - 1];
-        user.id = elem !== undefined ? elem.id + 1 : 1;
-        
-        this.userList.push(user);
-
-        console.log(`Created user with id: ${user.id} - uname: ${user.uname} - pword: ${user.pword}`);
-
-        return user;
-    }
-
-    /**
-     * deleteUser - Deletes the user with the specified id
-     */
-    public deleteUser(id: number): User | undefined {
-        let result: User | undefined;
-        let newList: User[] = [];
-
-        for( var i = 0; i < this.userList.length; i++){ 
-            if (this.userList[i] !== undefined && this.userList[i].id === id) { 
-                //result = this.userList.splice(i, 1)[0];
-                result = this.userList[i];
-                continue; 
-            }
-
-            newList.push(this.userList[i]);
-        }
-
-        this.userList = newList;
+        console.log(`Created user with id: ${result.id} - uname: ${result.uname} - pword: ${result.pword}`);
 
         return result;
     }
 
     /**
-     * clearList - replaces userList with an empty array
+     * deleteUser - Deletes the user with the specified id
      */
-    public clearList() {
-        this.userList = [];
+    public async deleteUser(id: number): Promise<User | undefined> {
+        let result: User | undefined = await User.findOne(id);
+
+        if (result !== undefined) {
+            await User.remove(result);
+        }
+
+        return result;
     }
 }

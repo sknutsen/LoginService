@@ -13,7 +13,7 @@ const main = async () => {
     const conn = await createConnection({
         type: 'postgres',
         host: process.env.DB_HOST,
-        database: __prod__ ? 'AuthDB' : __dev__ ? 'AuthDBDev' : 'AuthDBTest',
+        database: __prod__ ? 'AuthDB' : 'AuthDBDev',
         username: process.env.DB_USER,
         password: process.env.DB_PASS,
         entities: [join(__dirname, "./entities/*.*")],
@@ -22,18 +22,18 @@ const main = async () => {
     });
 
     const app = express();
-    const usersRoute: users = new users();
+    const usersRoute: users = new users(conn);
     const registerRoute: register = new register(usersRoute);
     const loginRoute: login = new login(usersRoute);
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    app.post('/login', (req, res) => {
+    app.post('/login', async (req, res) => {
     const uname: string = req.body.uname;
     const pword: string = req.body.pword;
 
-    const result = loginRoute.login(uname, pword);
+    const result = await loginRoute.login(uname, pword);
 
     if (result === true) {
         res.status(200).send('Login successful.');
@@ -42,11 +42,11 @@ const main = async () => {
     }
     });
 
-    app.post('/register', (req, res) => {
+    app.post('/register', async (req, res) => {
     const uname: string = req.body.uname;
     const pword: string = req.body.pword;
 
-    const result: boolean = registerRoute.register(uname, pword);
+    const result: boolean = await registerRoute.register(uname, pword);
 
     if (result === true) {
         res.status(200).send('Registration successful.');

@@ -15,11 +15,11 @@ export class User extends BaseEntity {
     @Column("int")
     public tokenVersion: number;
 
-    constructor(id: number, uname: string, pword: string, tokenVersion?: number) {
+    constructor(id: number, uname: string, pword: string, tokenVersion: number) {
         super();
         this.id = id;
         this.uname = uname;
         this.pword = pword;
-        this.tokenVersion = tokenVersion ?? 0;
+        this.tokenVersion = tokenVersion;
     }
 }

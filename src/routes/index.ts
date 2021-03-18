@@ -10,7 +10,7 @@ routes.post("/login", async (req, res) => {
     const uname: string = req.body.uname;
     const pword: string = req.body.pword;
 
-    const result = await login(req, res, uname, pword);
+    const result = await login(res, uname, pword);
 
     if (!result) {
         res.status(400).send('Incorrect username or password.');

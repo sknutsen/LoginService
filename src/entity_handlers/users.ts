@@ -47,7 +47,7 @@ export class users {
             user.pword = pwordHash;
         }
 
-        await User.update(id, {uname: user.uname, pword: user.pword});
+        await User.update(id, {uname: user.uname, pword: user.pword, tokenVersion: user.tokenVersion});
 
         let result = this.getUser(id);
 
@@ -60,9 +60,7 @@ export class users {
     public async postUser(uname: string, pword: string): Promise<User> {
         const pwordHash = await hash(pword, 11);
 
-        const result: User = await User.create({uname: uname, pword: pwordHash}).save();
-
-        console.log(`Created user with id: ${result.id} - uname: ${result.uname} - pword: ${result.pword}`);
+        const result: User = await User.create({uname: uname, pword: pwordHash, tokenVersion: 0}).save();
 
         return result;
     }

@@ -16,4 +16,4 @@ export const register = async (uname: string, pword: string): Promise<boolean> =
     }
 
     return result;
-}
+};

@@ -1,11 +1,10 @@
 require('dotenv').config()
 import { User } from "../../src/entities/User";
 import { login } from "../../src/routes/login";
-import { users } from "../../src/handlers/users";
+import { users } from "../../src/entity_handlers/users";
 import { Connection, createConnection } from "typeorm";
 import { join } from "path";
 
-let a: login;
 let u: users;
 let conn: Connection;
 
@@ -21,8 +20,7 @@ beforeAll(async () => {
         synchronize: true,
     });
 
-    u = new users(conn);
-    a = new login(u);
+    u = new users();
     
     User.clear();
     
@@ -35,7 +33,7 @@ beforeAll(async () => {
 test("login true", async () => {
     const uname: string = "lusername";
     const pword: string = "lpassword";
-    const verified: boolean = await a.login(uname, pword);
+    const verified = await login(null, null, uname, pword);
     const ulist: User[] = await u.getUsers();
 
     expect(verified).toBe(true);
@@ -47,7 +45,7 @@ test("login true", async () => {
 test("login false 1", async () => {
     const uname: string = "lusername";
     const pword: string = "password";
-    const verified: boolean = await a.login(uname, pword);
+    const verified = await login(null, null, uname, pword);
     const ulist: User[] = await u.getUsers();
 
     expect(verified).toBe(false);
@@ -59,7 +57,7 @@ test("login false 1", async () => {
 test("login false 2", async () => {
     const uname: string = "bob";
     const pword: string = "lpassword";
-    const verified: boolean = await a.login(uname, pword);
+    const verified = await login(null, null, uname, pword);
     const ulist: User[] = await u.getUsers();
 
     expect(verified).toBe(false);

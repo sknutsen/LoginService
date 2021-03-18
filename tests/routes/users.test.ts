@@ -1,7 +1,8 @@
 require('dotenv').config()
 import { Connection, createConnection } from "typeorm";
+import { compare } from "bcryptjs";
 import { User } from "../../src/entities/User";
-import { users } from "../../src/handlers/users";
+import { users } from "../../src/entity_handlers/users";
 import { __dev__, __prod__, __test__ } from "../../src/constants";
 import { join } from "path";
 
@@ -20,7 +21,7 @@ beforeAll(async () => {
         synchronize: true,
     },);
 
-    u = new users(conn);
+    u = new users();
     
     User.clear();
     
@@ -60,6 +61,28 @@ test('getUser negative test', async () => {
     expect(user).toBeUndefined();
 });
 
+// Test for getting the user with id 1
+// Should return a user successfully
+test('getUserByUname positive test', async () => {
+    const puser: User = new User(0, "asdsadasd", "afafaewe");
+    const newUser: User = await u.postUser(puser.uname, puser.pword);
+
+    const uname: string = newUser.uname;
+    const user: User | undefined = await u.getUserByUname(uname);
+
+    expect(user).toBeDefined();
+    user !== undefined ? expect(user.uname).toBe(uname) : fail();
+});
+
+// Test for getting nonexistent user with id 100
+// Should fail
+test('getUserByUname negative test', async () => {
+    const uname: string = "bad name";
+    const user: User | undefined = await u.getUserByUname(uname);
+
+    expect(user).toBeUndefined();
+});
+
 // Test for updating the values of the user with id 1
 // Should return the user with the updated values successfully
 test('putUser positive test', async () => {
@@ -72,12 +95,14 @@ test('putUser positive test', async () => {
 
     const user: User = new User(id, uname, pword);
     const newUser: User | undefined = await u.putUser(user.id, user);
+    const samePword: boolean = await compare(pword, newUser.pword);
 
     expect(newUser).toBeDefined();
     if (newUser !== undefined) {
         expect(newUser.id).toBe(id);
         expect(newUser.uname).toBe(user.uname);
-        expect(newUser.pword).toBe(user.pword);
+        expect(newUser.pword).not.toBe(user.pword);
+        expect(samePword).toBe(true);
         expect(await User.find({uname: newUser.uname, pword: newUser.pword})).toBeDefined();
     } else {
         fail();
@@ -89,12 +114,14 @@ test('putUser positive test', async () => {
 test('postUser positive test', async () => {
     const user: User = new User(0, "user3", "pword3");
     const newUser: User = await u.postUser(user.uname, user.pword);
+    const samePword: Boolean = await compare(user.pword, newUser.pword);
     const uget: User | undefined = await u.getUser(newUser.id);
 
     expect(newUser).toBeDefined();
     if (newUser !== undefined) {
         expect(newUser.uname).toBe(user.uname);
-        expect(newUser.pword).toBe(user.pword);
+        expect(newUser.pword).not.toBe(user.pword);
+        expect(samePword).toBe(true);
         expect(await User.find({uname: newUser.uname, pword: newUser.pword})).toBeDefined();
     } else {
         fail();

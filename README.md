@@ -5,3 +5,7 @@ ExpressJS - http://expressjs.com
 Jest - https://jestjs.io  
 dotenv - https://github.com/motdotla/dotenv  
 typeorm - https://typeorm.io/#/  
+cookie-parser  
+bcryptjs  
+pg  
+Jsonwebtoken

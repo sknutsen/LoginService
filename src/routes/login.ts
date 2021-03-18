@@ -1,27 +1,30 @@
+import { compare } from "bcryptjs";
+import { Request, Response } from "express";
+import { createAccessToken, createRefreshToken } from "../data/auth";
+import { LoginResponse } from "../wrappers/LoginResponse";
+import { sendRefreshToken } from "../data/sendRefreshToken";
 import { User } from "../entities/User";
-import { users } from "../handlers/users";
 
-export class login {
-    private u: users;
+/**
+ * login - Verifies that the user exists and the password is correct
+ */
+export const login = async (req: Request, res: Response, uname: string, pword: string): Promise<LoginResponse> => {
+    const user = await User.findOne({where: {uname: uname} });
 
-    constructor(u: users) {
-        this.u = u;
+    if (!user) {
+        res.send({ok: false});
+        throw new Error("Incorrect username");
     }
 
-    /**
-     * login - Verifies that the user exists and the password is correct
-     */
-    public async login(uname: string, pword: string): Promise<boolean> {
-        const ulist: User[] = await this.u.getUsers();
-        let result: boolean = false;
+    const valid: boolean = await compare(pword, user.pword);
 
-        for (let i: number = 0; i < ulist.length; i++) {
-            result = ulist[i].uname.toLowerCase() === uname.toLowerCase() && ulist[i].pword === pword;
-            if (result) {
-                break;
-            }
-        }
-
-        return result;
+    if (!valid) {
+        throw new Error("Incorrect password");
     }
+
+    sendRefreshToken(res, createRefreshToken(user));
+
+    return {
+        accessToken: createAccessToken(user)
+    };
 }

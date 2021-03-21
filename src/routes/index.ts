@@ -29,6 +29,9 @@ routes.post("/register", async (req, res) => {
     const uname: string = req.body.uname;
     const pword: string = req.body.pword;
 
+    console.log(req.body);
+    console.log(uname, pword);
+
     const result: boolean = await register(uname, pword);
 
     if (result === true) {

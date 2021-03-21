@@ -8,4 +8,5 @@ typeorm - https://typeorm.io/#/
 cookie-parser  
 bcryptjs  
 pg  
-Jsonwebtoken
+Jsonwebtoken  
+cors  

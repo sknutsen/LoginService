@@ -7,6 +7,7 @@ import { users } from "../entity_handlers/users";
 export const refreshToken = async (req: Request, res: Response) => {
     const token = req.cookies.lid;
     if (!token) {
+        console.log(`no lid cookie ${req.cookies.lid}`);
         return res.send({ok: false, accessToken: ''});
     }
     
@@ -24,6 +25,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     const user = await u.getUser(payload.userId);
 
     if (!user) {
+        console.log(`no user with id ${payload.userId}`);
         return res.send({ok: false, accessToken: ''});
     }
 

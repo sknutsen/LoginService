@@ -1,10 +1,14 @@
 import { Router } from "express";
 import { isAuth } from "../middleware/isAuth";
 import { login } from "./login";
+import { logMeOut } from "./logmeout";
+import { me } from "./me";
 import { refreshToken } from "./refreshToken";
 import { register } from "./register";
 
 const routes = Router();
+
+//routes.post("/forgot-password");
 
 routes.post("/login", async (req, res) => {
     const uname: string = req.body.uname;
@@ -19,9 +23,9 @@ routes.post("/login", async (req, res) => {
     res.send({ok: true, accessToken: result.accessToken});
 });
 
-//routes.post("/logmeout");
+routes.post("/logmeout", [isAuth], logMeOut);
 
-//routes.post("/forgot-password");
+routes.get("/me", [isAuth], me);
 
 routes.post("/refresh-token", [isAuth], refreshToken);
 

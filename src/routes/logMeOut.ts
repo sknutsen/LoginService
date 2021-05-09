@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { verify } from "jsonwebtoken";
-import { createAccessToken, createRefreshToken } from "../data/auth";
-import { sendRefreshToken } from "../data/sendRefreshToken";
+import { revokeRefreshToken } from "../data/revokeRefreshToken";
 import { users } from "../entity_handlers/users";
 
-export const refreshToken = async (req: Request, res: Response) => {
+export const logMeOut = async (req: Request, res: Response) => {
     const token = req.cookies.lid;
     if (!token) {
         console.log(`no lid cookie ${req.cookies.lid}`);
@@ -32,7 +31,9 @@ export const refreshToken = async (req: Request, res: Response) => {
         return res.send({ok: false, accessToken: ''});
     }
 
-    sendRefreshToken(res, createRefreshToken(user));
+    revokeRefreshToken(user);
 
-    return res.send({ok: true, accessToken: createAccessToken(user)});
+    res.status(200);
+
+    return res.send({ok: true, accessToken: ''});
 };
